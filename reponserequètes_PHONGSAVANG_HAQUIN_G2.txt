@@ -1,0 +1,38 @@
+set schema 'matski_update';
+/*3.Client n'ayant jamais passée de commande*/
+select distinct c1.* 
+from _client as c1 
+except 
+select distinct c2.* 
+from _client as c2 
+inner join _commande 
+on _commande.numclient=c2.numclient 
+order by numclient asc;
+
+/*1.L'ensemble des articles n'ayant jamais été commandés*/
+
+select art1.* from _article as art1 
+except
+select art2.*from _article as art2
+inner join _detailcommande 
+on _detailcommande.numarticle=art2.numarticle 
+order by numarticle asc;
+
+/*5.Le montant total TTC commandé par type de TVA appliquée au client (France, UE sauf France, hors UE)*/
+
+select sum(montantttc),codetypetva 
+from _commande 
+inner join _client 
+on _commande.numclient=_client.numclient 
+inner join _etiquette 
+on _client.codeetiquette=_etiquette.codeetiquette 
+group by codetypetva ;
+
+
+/*L'ensemble des commandes n'ayant pas été livrées totalement*/
+
+select numarticle,sum(quantitecommandee),sum(quantitelivree) 
+from _detailcommande
+where quantitelivree<quantitecommandee
+group by numarticle 
+order by numarticle asc;
